@@ -7,3 +7,7 @@
 ## Instrucciones para correr el programa
 
 En construcción...
+
+## Recompilar proto files
+
+protoc --go_out=. --go-grpc_out=. proto/ofertas.proto

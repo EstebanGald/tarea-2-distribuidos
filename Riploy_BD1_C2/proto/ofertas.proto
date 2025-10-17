@@ -1,0 +1,22 @@
+// Especifica la versión de la sintaxis de Protocol Buffers.
+syntax = "proto3";
+
+// Define el paquete de Go que se generará. Evita colisiones de nombres.
+option go_package = "/proto";
+
+service Ofertas {
+  rpc Ofertas (OfertasRequest) returns (OfertasResponse);
+}
+
+message OfertasRequest {
+  string producto_id = 1;
+  string tienda = 2;
+  string categoria = 3;
+  string producto = 4;
+  int32 precio_base = 5;
+  int32 stock = 6;
+}
+
+message OfertasResponse {
+  string broker_message = 1;
+}  

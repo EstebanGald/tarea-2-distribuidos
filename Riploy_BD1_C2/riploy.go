@@ -5,8 +5,10 @@ import (
 	"encoding/csv"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
+	"time"
 
 	pb "riploy/proto"
 
@@ -18,6 +20,9 @@ const (
 )
 
 func main() {
+
+	//random_seed
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	//Conectar al servidor gRPC
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
@@ -57,7 +62,8 @@ func main() {
 		// 5. Parse and convert data for the request
 		// The fields precio_base and stock are defined as int32 in the proto file.
 		// The CSV provides these as strings, so they must be converted.
-		precio_base, err := strconv.Atoi(record[4])
+		// Parse original price
+		originalPrecioBase, err := strconv.Atoi(record[4])
 		if err != nil {
 			log.Printf("Warning: could not parse precio_base '%s'. Skipping row.", record[4])
 			continue
@@ -69,18 +75,30 @@ func main() {
 			continue
 		}
 
+		//Aplicar descuento aleatorio entre 10% y 50%
+		discountPercent := 0.10 + r.Float64()*0.40
+		originalPrecioFloat := float64(originalPrecioBase)
+		discountedPrecioFloat := originalPrecioFloat * (1.0 - discountPercent)
+		finalPrecio := int32(discountedPrecioFloat)
+
+		//Get Fecha Actual
+		currentTime := time.Now()
+		formattedDate := currentTime.Format("2006-01-02")
+
 		resp, err := client.Ofertas(ctx, &pb.OfertasRequest{
-			ProductoId: record[0],
-			Tienda:     record[1],
-			Categoria:  record[2],
-			Producto:   record[3],
-			PrecioBase: int32(precio_base),
-			Stock:      int32(stock),
+			ProductoId:      record[0],
+			Tienda:          record[1],
+			Categoria:       record[2],
+			Producto:        record[3],
+			PrecioDescuento: int32(finalPrecio),
+			Stock:           int32(stock),
+			Fecha:           formattedDate,
+			ClienteId:       "Riploy", // Identificador del cliente
 		})
 
 		if err != nil {
 			log.Printf("Error sending operation for ProductoId %s: %v", record[0], err)
-			continue // Continue to the next product even if one fails
+			continue // Continuar a la siguiente fila incluso si hay un error
 		}
 
 		log.Printf("Response for %s: %s", record[0], resp.GetBrokerMessage())

@@ -13,8 +13,10 @@ message OfertasRequest {
   string tienda = 2;
   string categoria = 3;
   string producto = 4;
-  int32 precio_base = 5;
+  int32 precio_descuento = 5;
   int32 stock = 6;
+  string fecha = 7;
+  string cliente_id = 8;
 }
 
 message OfertasResponse {

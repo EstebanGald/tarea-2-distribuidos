@@ -24,15 +24,17 @@ const (
 )
 
 type OfertasRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProductoId    string                 `protobuf:"bytes,1,opt,name=producto_id,json=productoId,proto3" json:"producto_id,omitempty"`
-	Tienda        string                 `protobuf:"bytes,2,opt,name=tienda,proto3" json:"tienda,omitempty"`
-	Categoria     string                 `protobuf:"bytes,3,opt,name=categoria,proto3" json:"categoria,omitempty"`
-	Producto      string                 `protobuf:"bytes,4,opt,name=producto,proto3" json:"producto,omitempty"`
-	PrecioBase    int32                  `protobuf:"varint,5,opt,name=precio_base,json=precioBase,proto3" json:"precio_base,omitempty"`
-	Stock         int32                  `protobuf:"varint,6,opt,name=stock,proto3" json:"stock,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	ProductoId      string                 `protobuf:"bytes,1,opt,name=producto_id,json=productoId,proto3" json:"producto_id,omitempty"`
+	Tienda          string                 `protobuf:"bytes,2,opt,name=tienda,proto3" json:"tienda,omitempty"`
+	Categoria       string                 `protobuf:"bytes,3,opt,name=categoria,proto3" json:"categoria,omitempty"`
+	Producto        string                 `protobuf:"bytes,4,opt,name=producto,proto3" json:"producto,omitempty"`
+	PrecioDescuento int32                  `protobuf:"varint,5,opt,name=precio_descuento,json=precioDescuento,proto3" json:"precio_descuento,omitempty"`
+	Stock           int32                  `protobuf:"varint,6,opt,name=stock,proto3" json:"stock,omitempty"`
+	Fecha           string                 `protobuf:"bytes,7,opt,name=fecha,proto3" json:"fecha,omitempty"`
+	ClienteId       string                 `protobuf:"bytes,8,opt,name=cliente_id,json=clienteId,proto3" json:"cliente_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *OfertasRequest) Reset() {
@@ -93,9 +95,9 @@ func (x *OfertasRequest) GetProducto() string {
 	return ""
 }
 
-func (x *OfertasRequest) GetPrecioBase() int32 {
+func (x *OfertasRequest) GetPrecioDescuento() int32 {
 	if x != nil {
-		return x.PrecioBase
+		return x.PrecioDescuento
 	}
 	return 0
 }
@@ -105,6 +107,20 @@ func (x *OfertasRequest) GetStock() int32 {
 		return x.Stock
 	}
 	return 0
+}
+
+func (x *OfertasRequest) GetFecha() string {
+	if x != nil {
+		return x.Fecha
+	}
+	return ""
+}
+
+func (x *OfertasRequest) GetClienteId() string {
+	if x != nil {
+		return x.ClienteId
+	}
+	return ""
 }
 
 type OfertasResponse struct {
@@ -155,16 +171,18 @@ var File_proto_ofertas_proto protoreflect.FileDescriptor
 
 const file_proto_ofertas_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/ofertas.proto\"\xba\x01\n" +
+	"\x13proto/ofertas.proto\"\xf9\x01\n" +
 	"\x0eOfertasRequest\x12\x1f\n" +
 	"\vproducto_id\x18\x01 \x01(\tR\n" +
 	"productoId\x12\x16\n" +
 	"\x06tienda\x18\x02 \x01(\tR\x06tienda\x12\x1c\n" +
 	"\tcategoria\x18\x03 \x01(\tR\tcategoria\x12\x1a\n" +
-	"\bproducto\x18\x04 \x01(\tR\bproducto\x12\x1f\n" +
-	"\vprecio_base\x18\x05 \x01(\x05R\n" +
-	"precioBase\x12\x14\n" +
-	"\x05stock\x18\x06 \x01(\x05R\x05stock\"8\n" +
+	"\bproducto\x18\x04 \x01(\tR\bproducto\x12)\n" +
+	"\x10precio_descuento\x18\x05 \x01(\x05R\x0fprecioDescuento\x12\x14\n" +
+	"\x05stock\x18\x06 \x01(\x05R\x05stock\x12\x14\n" +
+	"\x05fecha\x18\a \x01(\tR\x05fecha\x12\x1d\n" +
+	"\n" +
+	"cliente_id\x18\b \x01(\tR\tclienteId\"8\n" +
 	"\x0fOfertasResponse\x12%\n" +
 	"\x0ebroker_message\x18\x01 \x01(\tR\rbrokerMessage27\n" +
 	"\aOfertas\x12,\n" +

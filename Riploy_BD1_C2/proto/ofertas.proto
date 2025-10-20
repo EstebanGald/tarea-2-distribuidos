@@ -8,6 +8,11 @@ service Ofertas {
   rpc Ofertas (OfertasRequest) returns (OfertasResponse);
 }
 
+service DynamoDB {
+  rpc GuardarOfertas (OfertasRequest) returns (OfertasResponse);
+  rpc EnviarOfertas (OfertasRequest) returns (OfertasResponse);
+}
+
 message OfertasRequest {
   string producto_id = 1;
   string tienda = 2;

@@ -10,21 +10,21 @@ import (
 	"strconv"
 	"time"
 
-	pb "riploy/proto"
+	pb "riploy_bd1_c2/proto"
 
 	"google.golang.org/grpc"
 )
 
 const (
-	address = "localhost:50051"
+	address_broker = "localhost:50051"
 )
 
 func main() {
 
-	//random_seed
+	//random seed
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	//Conectar al servidor gRPC
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial(address_broker, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Error al conectar al servidor: %v", err)
 	}
@@ -102,6 +102,10 @@ func main() {
 		}
 
 		log.Printf("Response for %s: %s", record[0], resp.GetBrokerMessage())
+
+		// Esperar un tiempo aleatorio entre 500ms y 2000ms antes de enviar la siguiente oferta
+		sleepDuration := time.Duration(500+r.Intn(1500)) * time.Millisecond
+		time.Sleep(sleepDuration)
 	}
 
 	log.Println("Finished sending all offers from CSV.")

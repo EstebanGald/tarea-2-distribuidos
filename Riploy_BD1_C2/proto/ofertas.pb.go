@@ -186,7 +186,10 @@ const file_proto_ofertas_proto_rawDesc = "" +
 	"\x0fOfertasResponse\x12%\n" +
 	"\x0ebroker_message\x18\x01 \x01(\tR\rbrokerMessage27\n" +
 	"\aOfertas\x12,\n" +
-	"\aOfertas\x12\x0f.OfertasRequest\x1a\x10.OfertasResponseB\bZ\x06/protob\x06proto3"
+	"\aOfertas\x12\x0f.OfertasRequest\x1a\x10.OfertasResponse2s\n" +
+	"\bDynamoDB\x123\n" +
+	"\x0eGuardarOfertas\x12\x0f.OfertasRequest\x1a\x10.OfertasResponse\x122\n" +
+	"\rEnviarOfertas\x12\x0f.OfertasRequest\x1a\x10.OfertasResponseB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_ofertas_proto_rawDescOnce sync.Once
@@ -207,9 +210,13 @@ var file_proto_ofertas_proto_goTypes = []any{
 }
 var file_proto_ofertas_proto_depIdxs = []int32{
 	0, // 0: Ofertas.Ofertas:input_type -> OfertasRequest
-	1, // 1: Ofertas.Ofertas:output_type -> OfertasResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	0, // 1: DynamoDB.GuardarOfertas:input_type -> OfertasRequest
+	0, // 2: DynamoDB.EnviarOfertas:input_type -> OfertasRequest
+	1, // 3: Ofertas.Ofertas:output_type -> OfertasResponse
+	1, // 4: DynamoDB.GuardarOfertas:output_type -> OfertasResponse
+	1, // 5: DynamoDB.EnviarOfertas:output_type -> OfertasResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -228,7 +235,7 @@ func file_proto_ofertas_proto_init() {
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_proto_ofertas_proto_goTypes,
 		DependencyIndexes: file_proto_ofertas_proto_depIdxs,

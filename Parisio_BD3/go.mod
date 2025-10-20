@@ -1,4 +1,4 @@
-module broker_c1
+module parisio_bd3
 
 go 1.24.2
 

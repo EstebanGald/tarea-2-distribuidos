@@ -1,4 +1,4 @@
-module broker_c1
+module falabellox_bd2_c3
 
 go 1.24.2
 

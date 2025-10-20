@@ -1,4 +1,4 @@
-module riploy
+module riploy_bd1_c2
 
 go 1.24.2
 

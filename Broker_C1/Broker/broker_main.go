@@ -7,19 +7,19 @@ import (
 	"sync"
 
 	// Importamos el código generado por protoc
-	pb "broker_c1/proto" // Reemplaza con el path de tu módulo
+	pb "broker_c1/proto"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes" // 1. Import for gRPC error codes
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/status" // 2. Import for gRPC error status
+	"google.golang.org/grpc/status"
 )
 
 const (
 	address_broker = ":50051"
-	adress_db1     = "localhost:50052" // 2. Address for the DB server
-	adress_db2     = "localhost:50053" // 3. Address for the DB server
-	adress_db3     = "localhost:50054" // 4. Address for the DB server
+	adress_db1     = "localhost:50052"
+	adress_db2     = "localhost:50053"
+	adress_db3     = "localhost:50054"
 )
 
 // Definimos una struct para nuestro servidor. Debe embeber el UnimplementedGreeterServer.

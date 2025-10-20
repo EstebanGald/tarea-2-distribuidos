@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	pb "riploy_bd1_c2/proto"
+	pb "parisio_bd3/proto"
 
 	"google.golang.org/grpc"
 )
@@ -34,38 +34,41 @@ func main() {
 
 	ctx := context.Background()
 
-	file, err := os.Open("riploy_catalogo.csv")
+	// 2. Open the CSV file
+	file, err := os.Open("parisio_catalogo.csv")
 	if err != nil {
-		log.Fatalf("Error abriendo archivo CSV: %v", err)
+		log.Fatalf("Error al abrir CSV: %v", err)
 	}
 	defer file.Close()
 
+	// 3. Create a new CSV reader
 	reader := csv.NewReader(file)
-
+	// Skip the header row
 	if _, err := reader.Read(); err != nil {
-		log.Fatalf("Error leyendo header de CSV: %v", err)
+		log.Fatalf("Error leyendo header CSV: %v", err)
 	}
 
+	// 4. Loop through each record in the CSV
 	for {
 		record, err := reader.Read()
-
+		// Stop at the end of the file
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Error enviando oferta de CSV: %v", err)
+			log.Fatalf("Error leyendo oferta de CSV: %v", err)
 		}
 
 		//convertir precio y stock a int32
 		originalPrecioBase, err := strconv.Atoi(record[4])
 		if err != nil {
-			log.Printf("Warning: No pudo transformar precio_base '%s'. Saltando fila.", record[4])
+			log.Printf("Warning: no se pudo transformar precio_base '%s'. Saltando fila.", record[4])
 			continue
 		}
 
 		stock, err := strconv.Atoi(record[5])
 		if err != nil {
-			log.Printf("Warning: No pudo transformar stock '%s'. Saltando fila.", record[5])
+			log.Printf("Warning: no se pudo transformar stock '%s'. Saltando fila.", record[5])
 			continue
 		}
 
@@ -87,11 +90,11 @@ func main() {
 			PrecioDescuento: int32(finalPrecio),
 			Stock:           int32(stock),
 			Fecha:           formattedDate,
-			ClienteId:       "Riploy", // Identificador del cliente
+			ClienteId:       "Parisio", // Identificador del cliente
 		})
 
 		if err != nil {
-			log.Printf("Error enviando ProductoId %s: %v", record[0], err)
+			log.Printf("Error enviando operacion para ProductoId %s: %v", record[0], err)
 			continue // Continuar a la siguiente fila incluso si hay un error
 		}
 
@@ -102,5 +105,5 @@ func main() {
 		time.Sleep(sleepDuration)
 	}
 
-	log.Println("Finalizado enviando todas las ofertas del CSV.")
+	log.Println("Se han enviado todas las ofertas del CSV.")
 }

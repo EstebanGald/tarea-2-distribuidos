@@ -105,7 +105,7 @@ reporte:
 
 # Estado del sistema
 status:
-	@echo "📊 Estado de servicios:"
+	@echo " Estado de servicios:"
 	$(DOCKER_COMPOSE) ps
 
 # Restart individual

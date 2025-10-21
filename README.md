@@ -2,13 +2,13 @@
 
 Sistema distribuido de procesamiento de ofertas en tiempo real con tolerancia a fallos, simulando un evento CyberDay.
 
-## 👥 Integrantes
+## Integrantes
 
 - Vicente Luongo 202073637-5
 - Antonio Rey 202173633-6
 - Esteban Carrasco 201773546-5
 
-## 📋 Descripción del Sistema
+## Descripción del Sistema
 
 Sistema distribuido que simula el procesamiento de ofertas durante un CyberDay, implementando:
 
@@ -19,14 +19,14 @@ Sistema distribuido que simula el procesamiento de ofertas durante un CyberDay, 
 
 ### Características Principales
 
-✅ **Tolerancia a fallos**: Simulación de caídas de nodos y consumidores  
-✅ **Replicación eventual**: Modelo DynamoDB (N=3, W=2, R=2)  
-✅ **Idempotencia**: Control de ofertas duplicadas  
-✅ **Filtrado inteligente**: Distribución basada en preferencias  
-✅ **Resincronización automática**: Recuperación tras fallos  
-✅ **Persistencia**: Almacenamiento en disco de ofertas  
+ **Tolerancia a fallos**: Simulación de caídas de nodos y consumidores  
+ **Replicación eventual**: Modelo DynamoDB (N=3, W=2, R=2)  
+ **Idempotencia**: Control de ofertas duplicadas  
+ **Filtrado inteligente**: Distribución basada en preferencias  
+ **Resincronización automática**: Recuperación tras fallos  
+ **Persistencia**: Almacenamiento en disco de ofertas  
 
-## 🏗️ Arquitectura
+##  Arquitectura
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -58,7 +58,7 @@ Sistema distribuido que simula el procesamiento de ofertas durante un CyberDay, 
    └─────────┘        └─────────┘       └─────────┘
 ```
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### Prerequisitos
 
@@ -113,7 +113,7 @@ make docker-VM3
 make docker-VM4
 ```
 
-## 📊 Monitoreo y Resultados
+## Monitoreo y Resultados
 
 ### Ver Logs por Componente
 
@@ -152,7 +152,7 @@ make reporte
 docker exec cyberday_broker cat /root/Reporte.txt
 ```
 
-## 🗂️ Estructura del Proyecto
+##  Estructura del Proyecto
 
 ```
 .
@@ -193,7 +193,7 @@ docker exec cyberday_broker cat /root/Reporte.txt
 └── README.md
 ```
 
-## 🔧 Configuración
+## Configuración
 
 ### Archivo consumidores.csv
 
@@ -229,7 +229,7 @@ C-H4,null,null,null
 - Automotriz
 - Mascotas
 
-## 🧪 Simulación de Fallos
+## Simulación de Fallos
 
 El sistema simula fallos automáticamente:
 
@@ -271,7 +271,7 @@ El sistema simula fallos automáticamente:
 - Consistencia eventual
 - Durabilidad de datos
 
-## 📝 Reporte Final
+## Reporte Final
 
 El broker genera `Reporte.txt` con:
 
@@ -325,7 +325,7 @@ make test
 make clean
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Problema: Contenedores no se comunican
 
@@ -366,7 +366,7 @@ docker-compose logs broker | grep "Registrando consumidor"
 docker-compose logs riploy falabellox parisio | grep "procesadas"
 ```
 
-## 📚 Documentación Adicional
+## Documentación Adicional
 
 ### Protocol Buffers
 
@@ -395,15 +395,5 @@ Cada componente acepta variables de entorno para configuración:
 - `ARCHIVO_CONFIG`: Ruta al consumidores.csv
 - `TZ`: Zona horaria
 
-## 📄 Licencia
-
-Proyecto académico - Universidad Técnica Federico Santa María
-
-## ✉️ Contacto
-
-Para consultas sobre el proyecto:
-- Vicente Luongo
-- Antonio Rey  
-- Esteban Carrasco
 
 ---

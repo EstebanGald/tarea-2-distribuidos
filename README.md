@@ -258,7 +258,7 @@ El sistema simula fallos automáticamente:
    - Broker consulta R=2 nodos DB
    - Consumidor recibe ofertas perdidas
 
-## 📈 Parámetros de Consistencia
+## Parámetros de Consistencia
 
 ### N=3, W=2, R=2 (Modelo DynamoDB)
 
@@ -298,7 +298,7 @@ El broker genera `Reporte.txt` con:
 - Disponibilidad del sistema
 - Cumplimiento de N=3, W=2, R=2
 
-## 🛠️ Desarrollo
+## Desarrollo
 
 ### Recompilar Protocol Buffers
 

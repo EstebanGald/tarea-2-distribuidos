@@ -1,0 +1,48 @@
+# Binarios compilados
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+broker
+db_node
+productor
+consumidor
+
+# Go workspace file
+go.work
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos de resultados
+resultados/
+*.csv
+Reporte.txt
+*.json
+
+# Excepciones: mantener catálogos y config
+!*_catalogo.csv
+!consumidores.csv
+
+# Docker
+*.log
+
+# Archivos temporales
+tmp/
+temp/
+.DS_Store
+
+# Datos persistidos
+*_ofertas.json
+DB*_ofertas.json
+
+# Archivos de test
+coverage.out
+coverage.html

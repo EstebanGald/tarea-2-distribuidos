@@ -1,7 +1,8 @@
 .PHONY: help build up down logs clean proto test
 
 # Variables
-DOCKER_COMPOSE = docker-compose
+# Detectar si usar docker-compose o docker compose
+DOCKER_COMPOSE := $(shell if command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; else echo "docker compose"; fi)
 
 help:
 	@echo "=== CyberDay Distribuido - Comandos Disponibles ==="
@@ -126,7 +127,11 @@ restart-cons:
 # Tests
 test:
 	@echo " Ejecutando tests..."
-	go test ./... -v
+	@for mod in Broker_C1 Riploy_BD1_C2 Falabellox_BD2_C3 Parisio_BD3 Consumidores; do \
+		echo "--- Probando $$mod ---"; \
+		(cd $$mod && go test ./... -v); \
+	done
+	@echo "✅ Pruebas completadas"
 
 # Ver archivos CSV de consumidores
 ver-consumidores:
@@ -145,5 +150,5 @@ extraer-resultados:
 
 # Monitoreo en tiempo real
 monitor:
-	@echo " Monitoreo en tiempo real (Ctrl+C para salir)"
+	@echo "📡 Monitoreo en tiempo real (Ctrl+C para salir)"
 	watch -n 2 'docker-compose ps && echo "\n=== Logs recientes ===" && docker-compose logs --tail=5'

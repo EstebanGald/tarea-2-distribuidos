@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	pb "Riploy_BD1_C2/proto"
+	pb "riploy_bd1_c2/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

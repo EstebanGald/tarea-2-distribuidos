@@ -23,8 +23,8 @@ services:
   # NODOS DE BASE DE DATOS
   db1:
     build:
-      context: ./Riploy_BD1_C2/BD1
-      dockerfile: Dockerfile
+      context: ./Riploy_BD1_C2
+      dockerfile: BD1/Dockerfile
     container_name: cyberday_db1
     ports:
       - "50052:50052"
@@ -39,8 +39,8 @@ services:
 
   db2:
     build:
-      context: ./Falabellox_BD2_C3/BD2
-      dockerfile: Dockerfile
+      context: ./Falabellox_BD2_C3
+      dockerfile: BD2/Dockerfile
     container_name: cyberday_db2
     ports:
       - "50053:50053"
@@ -55,8 +55,8 @@ services:
 
   db3:
     build:
-      context: ./Parisio_BD3/BD3
-      dockerfile: Dockerfile
+      context: ./Parisio_BD3
+      dockerfile: BD3/Dockerfile
     container_name: cyberday_db3
     ports:
       - "50054:50054"
@@ -72,8 +72,8 @@ services:
   # PRODUCTORES
   riploy:
     build:
-      context: ./Riploy_BD1_C2/Riploy
-      dockerfile: Dockerfile
+      context: ./Riploy_BD1_C2
+      dockerfile: Riploy/Dockerfile
     container_name: cyberday_riploy
     networks:
       - cyberday_network
@@ -86,8 +86,8 @@ services:
 
   falabellox:
     build:
-      context: ./Falabellox_BD2_C3/Falabellox
-      dockerfile: Dockerfile
+      context: ./Falabellox_BD2_C3
+      dockerfile: Falabellox/Dockerfile
     container_name: cyberday_falabellox
     networks:
       - cyberday_network
@@ -100,8 +100,8 @@ services:
 
   parisio:
     build:
-      context: ./Parisio_BD3/Parisio
-      dockerfile: Dockerfile
+      context: ./Parisio_BD3
+      dockerfile: Parisio/Dockerfile
     container_name: cyberday_parisio
     networks:
       - cyberday_network
@@ -112,232 +112,232 @@ services:
     depends_on:
       - broker
 
-  # CONSUMIDORES GRUPO 1 (Electrónica)
-  consumidor_e1:
+  # CONSUMIDORES GRUPO 1 (C1)
+  consumidor_c1_1:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_e1
+    container_name: cyberday_consumidor_c1_1
     networks:
       - cyberday_network
     ports:
       - "50061:50061"
     volumes:
-      - consumidor_e1_data:/data
+      - consumidor_c1_1_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-E1
+      - CONSUMIDOR_ID=C1-1
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_e2:
+  consumidor_c1_2:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_e2
+    container_name: cyberday_consumidor_c1_2
     networks:
       - cyberday_network
     ports:
       - "50062:50062"
     volumes:
-      - consumidor_e2_data:/data
+      - consumidor_c1_2_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-E2
+      - CONSUMIDOR_ID=C1-2
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_e3:
+  consumidor_c1_3:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_e3
+    container_name: cyberday_consumidor_c1_3
     networks:
       - cyberday_network
     ports:
       - "50063:50063"
     volumes:
-      - consumidor_e3_data:/data
+      - consumidor_c1_3_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-E3
+      - CONSUMIDOR_ID=C1-3
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_e4:
+  consumidor_c1_4:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_e4
+    container_name: cyberday_consumidor_c1_4
     networks:
       - cyberday_network
     ports:
       - "50064:50064"
     volumes:
-      - consumidor_e4_data:/data
+      - consumidor_c1_4_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-E4
+      - CONSUMIDOR_ID=C1-4
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  # CONSUMIDORES GRUPO 2 (Moda)
-  consumidor_m1:
+  # CONSUMIDORES GRUPO 2 (C2)
+  consumidor_c2_1:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_m1
+    container_name: cyberday_consumidor_c2_1
     networks:
       - cyberday_network
     ports:
       - "50065:50065"
     volumes:
-      - consumidor_m1_data:/data
+      - consumidor_c2_1_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-M1
+      - CONSUMIDOR_ID=C2-1
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_m2:
+  consumidor_c2_2:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_m2
+    container_name: cyberday_consumidor_c2_2
     networks:
       - cyberday_network
     ports:
       - "50066:50066"
     volumes:
-      - consumidor_m2_data:/data
+      - consumidor_c2_2_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-M2
+      - CONSUMIDOR_ID=C2-2
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_m3:
+  consumidor_c2_3:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_m3
+    container_name: cyberday_consumidor_c2_3
     networks:
       - cyberday_network
     ports:
       - "50067:50067"
     volumes:
-      - consumidor_m3_data:/data
+      - consumidor_c2_3_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-M3
+      - CONSUMIDOR_ID=C2-3
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_m4:
+  consumidor_c2_4:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_m4
+    container_name: cyberday_consumidor_c2_4
     networks:
       - cyberday_network
     ports:
       - "50068:50068"
     volumes:
-      - consumidor_m4_data:/data
+      - consumidor_c2_4_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-M4
+      - CONSUMIDOR_ID=C2-4
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  # CONSUMIDORES GRUPO 3 (Hogar)
-  consumidor_h1:
+  # CONSUMIDORES GRUPO 3 (C3)
+  consumidor_c3_1:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_h1
+    container_name: cyberday_consumidor_c3_1
     networks:
       - cyberday_network
     ports:
       - "50069:50069"
     volumes:
-      - consumidor_h1_data:/data
+      - consumidor_c3_1_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-H1
+      - CONSUMIDOR_ID=C3-1
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_h2:
+  consumidor_c3_2:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_h2
+    container_name: cyberday_consumidor_c3_2
     networks:
       - cyberday_network
     ports:
       - "50070:50070"
     volumes:
-      - consumidor_h2_data:/data
+      - consumidor_c3_2_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-H2
+      - CONSUMIDOR_ID=C3-2
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_h3:
+  consumidor_c3_3:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_h3
+    container_name: cyberday_consumidor_c3_3
     networks:
       - cyberday_network
     ports:
       - "50071:50071"
     volumes:
-      - consumidor_h3_data:/data
+      - consumidor_c3_3_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-H3
+      - CONSUMIDOR_ID=C3-3
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
       - broker
 
-  consumidor_h4:
+  consumidor_c3_4:
     build:
       context: ./Consumidores
       dockerfile: Dockerfile
-    container_name: cyberday_consumidor_h4
+    container_name: cyberday_consumidor_c3_4
     networks:
       - cyberday_network
     ports:
       - "50072:50072"
     volumes:
-      - consumidor_h4_data:/data
+      - consumidor_c3_4_data:/data
       - ./consumidores.csv:/app/consumidores.csv:ro
     environment:
-      - CONSUMIDOR_ID=C-H4
+      - CONSUMIDOR_ID=C3-4
       - BROKER_ADDR=broker:50051
       - TZ=America/Santiago
     depends_on:
@@ -351,15 +351,15 @@ volumes:
   db1_data:
   db2_data:
   db3_data:
-  consumidor_e1_data:
-  consumidor_e2_data:
-  consumidor_e3_data:
-  consumidor_e4_data:
-  consumidor_m1_data:
-  consumidor_m2_data:
-  consumidor_m3_data:
-  consumidor_m4_data:
-  consumidor_h1_data:
-  consumidor_h2_data:
-  consumidor_h3_data:
-  consumidor_h4_data:
+  consumidor_c1_1_data:
+  consumidor_c1_2_data:
+  consumidor_c1_3_data:
+  consumidor_c1_4_data:
+  consumidor_c2_1_data:
+  consumidor_c2_2_data:
+  consumidor_c2_3_data:
+  consumidor_c2_4_data:
+  consumidor_c3_1_data:
+  consumidor_c3_2_data:
+  consumidor_c3_3_data:
+  consumidor_c3_4_data:

@@ -12,7 +12,7 @@ import (
 	"strings" 
 	"time"
 
-	pb "Parisio_BD3/proto"
+	pb "parisio_bd3/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

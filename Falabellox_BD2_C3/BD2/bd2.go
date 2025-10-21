@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	pb "Falabellox_BD2_C3/proto"
+	pb "falabellox_bd2_c3/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

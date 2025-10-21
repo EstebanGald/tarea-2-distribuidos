@@ -1,29 +1,92 @@
-// Especifica la versión de la sintaxis de Protocol Buffers.
 syntax = "proto3";
 
-// Define el paquete de Go que se generará. Evita colisiones de nombres.
 option go_package = "/proto";
 
+// Servicio para productores -> broker
 service Ofertas {
-  rpc Ofertas (OfertasRequest) returns (OfertasResponse);
+  rpc EnviarOferta (OfertaRequest) returns (OfertaResponse);
 }
 
+// Servicio para broker -> nodos DB
 service DynamoDB {
-  rpc GuardarOfertas (OfertasRequest) returns (OfertasResponse);
-  rpc EnviarOfertas (OfertasRequest) returns (OfertasResponse);
+  rpc GuardarOferta (OfertaRequest) returns (AckResponse);
+  rpc LeerHistorico (LeerHistoricoRequest) returns (HistoricoResponse);
+  rpc Sincronizar (SincronizarRequest) returns (SincronizarResponse);
 }
 
-message OfertasRequest {
-  string producto_id = 1;
-  string tienda = 2;
-  string categoria = 3;
-  string producto = 4;
-  int32 precio_descuento = 5;
-  int32 stock = 6;
-  string fecha = 7;
-  string cliente_id = 8;
+// Servicio para consumidores
+service Consumidor {
+  rpc RegistrarConsumidor (RegistroConsumidorRequest) returns (RegistroConsumidorResponse);
+  rpc SolicitarHistorico (SolicitarHistoricoRequest) returns (HistoricoConsumidorResponse);
 }
 
-message OfertasResponse {
-  string broker_message = 1;
-}  
+// Servicio para notificaciones push a consumidores
+service NotificacionesConsumidor {
+  rpc RecibirOferta (OfertaRequest) returns (AckResponse);
+}
+
+// Mensajes
+message OfertaRequest {
+  string oferta_id = 1;
+  string producto_id = 2;
+  string tienda = 3;
+  string categoria = 4;
+  string producto = 5;
+  int32 precio_descuento = 6;
+  int32 stock = 7;
+  string fecha = 8;
+  string cliente_id = 9;
+  int64 timestamp = 10;
+}
+
+message OfertaResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+message AckResponse {
+  bool exito = 1;
+  string nodo_id = 2;
+  string mensaje = 3;
+}
+
+message RegistroConsumidorRequest {
+  string consumidor_id = 1;
+  repeated string categorias = 2;
+  repeated string tiendas = 3;
+  int32 precio_max = 4;
+  string direccion_grpc = 5;
+}
+
+message RegistroConsumidorResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+message SolicitarHistoricoRequest {
+  string consumidor_id = 1;
+}
+
+message HistoricoConsumidorResponse {
+  repeated OfertaRequest ofertas = 1;
+}
+
+message LeerHistoricoRequest {
+  string nodo_id = 1;
+  int64 desde_timestamp = 2;
+}
+
+message HistoricoResponse {
+  repeated OfertaRequest ofertas = 1;
+  string nodo_id = 2;
+}
+
+message SincronizarRequest {
+  string nodo_origen = 1;
+  repeated OfertaRequest ofertas = 2;
+}
+
+message SincronizarResponse {
+  bool exito = 1;
+  int32 ofertas_sincronizadas = 2;
+}

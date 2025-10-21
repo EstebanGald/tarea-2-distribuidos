@@ -1,0 +1,365 @@
+version: '3.8'
+
+services:
+  # BROKER CENTRAL
+  broker:
+    build:
+      context: ./Broker_C1
+      dockerfile: Dockerfile
+    container_name: cyberday_broker
+    ports:
+      - "50051:50051"
+    networks:
+      - cyberday_network
+    volumes:
+      - ./shared:/shared
+    environment:
+      - TZ=America/Santiago
+    depends_on:
+      - db1
+      - db2
+      - db3
+
+  # NODOS DE BASE DE DATOS
+  db1:
+    build:
+      context: ./Riploy_BD1_C2/BD1
+      dockerfile: Dockerfile
+    container_name: cyberday_db1
+    ports:
+      - "50052:50052"
+    networks:
+      - cyberday_network
+    volumes:
+      - db1_data:/data
+    environment:
+      - NODO_ID=DB1
+      - PUERTO=:50052
+      - TZ=America/Santiago
+
+  db2:
+    build:
+      context: ./Falabellox_BD2_C3/BD2
+      dockerfile: Dockerfile
+    container_name: cyberday_db2
+    ports:
+      - "50053:50053"
+    networks:
+      - cyberday_network
+    volumes:
+      - db2_data:/data
+    environment:
+      - NODO_ID=DB2
+      - PUERTO=:50053
+      - TZ=America/Santiago
+
+  db3:
+    build:
+      context: ./Parisio_BD3/BD3
+      dockerfile: Dockerfile
+    container_name: cyberday_db3
+    ports:
+      - "50054:50054"
+    networks:
+      - cyberday_network
+    volumes:
+      - db3_data:/data
+    environment:
+      - NODO_ID=DB3
+      - PUERTO=:50054
+      - TZ=America/Santiago
+
+  # PRODUCTORES
+  riploy:
+    build:
+      context: ./Riploy_BD1_C2/Riploy
+      dockerfile: Dockerfile
+    container_name: cyberday_riploy
+    networks:
+      - cyberday_network
+    environment:
+      - PRODUCTOR_NOMBRE=Riploy
+      - CATALOGO=riploy_catalogo.csv
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  falabellox:
+    build:
+      context: ./Falabellox_BD2_C3/Falabellox
+      dockerfile: Dockerfile
+    container_name: cyberday_falabellox
+    networks:
+      - cyberday_network
+    environment:
+      - PRODUCTOR_NOMBRE=Falabellox
+      - CATALOGO=falabellox_catalogo.csv
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  parisio:
+    build:
+      context: ./Parisio_BD3/Parisio
+      dockerfile: Dockerfile
+    container_name: cyberday_parisio
+    networks:
+      - cyberday_network
+    environment:
+      - PRODUCTOR_NOMBRE=Parisio
+      - CATALOGO=parisio_catalogo.csv
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  # CONSUMIDORES GRUPO 1 (Electrónica)
+  consumidor_e1:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_e1
+    networks:
+      - cyberday_network
+    ports:
+      - "50061:50061"
+    volumes:
+      - consumidor_e1_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-E1
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_e2:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_e2
+    networks:
+      - cyberday_network
+    ports:
+      - "50062:50062"
+    volumes:
+      - consumidor_e2_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-E2
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_e3:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_e3
+    networks:
+      - cyberday_network
+    ports:
+      - "50063:50063"
+    volumes:
+      - consumidor_e3_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-E3
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_e4:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_e4
+    networks:
+      - cyberday_network
+    ports:
+      - "50064:50064"
+    volumes:
+      - consumidor_e4_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-E4
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  # CONSUMIDORES GRUPO 2 (Moda)
+  consumidor_m1:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_m1
+    networks:
+      - cyberday_network
+    ports:
+      - "50065:50065"
+    volumes:
+      - consumidor_m1_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-M1
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_m2:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_m2
+    networks:
+      - cyberday_network
+    ports:
+      - "50066:50066"
+    volumes:
+      - consumidor_m2_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-M2
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_m3:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_m3
+    networks:
+      - cyberday_network
+    ports:
+      - "50067:50067"
+    volumes:
+      - consumidor_m3_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-M3
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_m4:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_m4
+    networks:
+      - cyberday_network
+    ports:
+      - "50068:50068"
+    volumes:
+      - consumidor_m4_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-M4
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  # CONSUMIDORES GRUPO 3 (Hogar)
+  consumidor_h1:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_h1
+    networks:
+      - cyberday_network
+    ports:
+      - "50069:50069"
+    volumes:
+      - consumidor_h1_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-H1
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_h2:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_h2
+    networks:
+      - cyberday_network
+    ports:
+      - "50070:50070"
+    volumes:
+      - consumidor_h2_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-H2
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_h3:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_h3
+    networks:
+      - cyberday_network
+    ports:
+      - "50071:50071"
+    volumes:
+      - consumidor_h3_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-H3
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+  consumidor_h4:
+    build:
+      context: ./Consumidores
+      dockerfile: Dockerfile
+    container_name: cyberday_consumidor_h4
+    networks:
+      - cyberday_network
+    ports:
+      - "50072:50072"
+    volumes:
+      - consumidor_h4_data:/data
+      - ./consumidores.csv:/app/consumidores.csv:ro
+    environment:
+      - CONSUMIDOR_ID=C-H4
+      - BROKER_ADDR=broker:50051
+      - TZ=America/Santiago
+    depends_on:
+      - broker
+
+networks:
+  cyberday_network:
+    driver: bridge
+
+volumes:
+  db1_data:
+  db2_data:
+  db3_data:
+  consumidor_e1_data:
+  consumidor_e2_data:
+  consumidor_e3_data:
+  consumidor_e4_data:
+  consumidor_m1_data:
+  consumidor_m2_data:
+  consumidor_m3_data:
+  consumidor_m4_data:
+  consumidor_h1_data:
+  consumidor_h2_data:
+  consumidor_h3_data:
+  consumidor_h4_data:

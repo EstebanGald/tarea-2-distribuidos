@@ -1,4 +1,4 @@
-# Falabellox_BD2_C3/BD2/Dockerfile
+# Riploy_BD1_C2/BD1/Dockerfile
 FROM golang:1.24-alpine AS builder
 
 # Instalar dependencias
@@ -17,7 +17,7 @@ COPY ../proto ./proto
 COPY . .
 
 # Compilar
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o db_node ./bd2.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o db_node ./bd1.go
 
 # Imagen final
 FROM alpine:latest
@@ -42,15 +42,15 @@ RUN chown appuser:appgroup /data/db_node
 USER appuser
 
 # Exponer puerto
-EXPOSE 50053
+EXPOSE 50052
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD nc -z localhost 50053 || exit 1
+  CMD nc -z localhost 50052 || exit 1
 
 # Variables de entorno por defecto
-ENV NODO_ID=DB2
-ENV PUERTO=:50053
+ENV NODO_ID=DB1
+ENV PUERTO=:50052
 
 # Ejecutar
 CMD ["./db_node"]

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	pb "db_node/proto"
+	pb "Riploy_BD1_C2/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,16 +25,13 @@ type DBNode struct {
 	ofertas         map[string]*pb.OfertaRequest
 	ofertasMutex    sync.RWMutex
 	
-	// Peers para sincronización
 	peers           []string
 	peerClients     []pb.DynamoDBClient
 	peersMutex      sync.RWMutex
 	
-	// Estado
 	activo          bool
 	estadoMutex     sync.RWMutex
 	
-	// Persistencia
 	archivoPersistencia string
 }
 
@@ -70,7 +67,6 @@ func (db *DBNode) GuardarOferta(ctx context.Context, in *pb.OfertaRequest) (*pb.
 	db.ofertas[ofertaID] = in
 	db.ofertasMutex.Unlock()
 	
-	// Persistir a disco
 	if err := db.persistirOfertas(); err != nil {
 		log.Printf("[%s] Error persistiendo: %v", db.nodoID, err)
 	}
@@ -91,7 +87,6 @@ func (db *DBNode) LeerHistorico(ctx context.Context, in *pb.LeerHistoricoRequest
 	ofertas := make([]*pb.OfertaRequest, 0, len(db.ofertas))
 	
 	for _, oferta := range db.ofertas {
-		// Filtrar por timestamp si se especifica
 		if in.GetDesdeTimestamp() > 0 && oferta.GetTimestamp() < in.GetDesdeTimestamp() {
 			continue
 		}
@@ -242,10 +237,7 @@ func (db *DBNode) simularFallo(duracion time.Duration) {
 	
 	log.Printf("[%s] ✅ RECUPERADO DE FALLO - Iniciando resincronización", db.nodoID)
 	
-	// Esperar un poco para estabilizar
 	time.Sleep(2 * time.Second)
-	
-	// Solicitar sincronización de peers
 	db.solicitarSincronizacionDePeers()
 }
 
@@ -260,7 +252,6 @@ func (db *DBNode) solicitarSincronizacionDePeers() {
 		
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		
-		// Leer histórico del peer
 		resp, err := peerClient.LeerHistorico(ctx, &pb.LeerHistoricoRequest{
 			NodoId:         db.nodoID,
 			DesdeTimestamp: 0,
@@ -272,7 +263,6 @@ func (db *DBNode) solicitarSincronizacionDePeers() {
 			continue
 		}
 		
-		// Sincronizar ofertas recibidas
 		db.ofertasMutex.Lock()
 		nuevasOfertas := 0
 		for _, oferta := range resp.GetOfertas() {
@@ -288,23 +278,21 @@ func (db *DBNode) solicitarSincronizacionDePeers() {
 			log.Printf("[%s] Resincronizadas %d ofertas desde peer %d", db.nodoID, nuevasOfertas, i)
 		}
 		
-		break // Con un peer es suficiente
+		break
 	}
 }
 
 func main() {
-	// Leer configuración desde variables de entorno o argumentos
 	nodoID := os.Getenv("NODO_ID")
 	if nodoID == "" {
-		nodoID = "DB1" // Default
+		nodoID = "DB1"  // ← DEFAULT PARA BD1
 	}
 	
 	puerto := os.Getenv("PUERTO")
 	if puerto == "" {
-		puerto = ":50052" // Default
+		puerto = ":50052"  // ← PUERTO DEFAULT PARA BD1
 	}
 	
-	// Definir peers (otros nodos)
 	peers := []string{}
 	if nodoID == "DB1" {
 		peers = []string{"db2:50053", "db3:50054"}
@@ -314,20 +302,16 @@ func main() {
 		peers = []string{"db1:50052", "db2:50053"}
 	}
 	
-	// Crear nodo
 	dbNode := NewDBNode(nodoID, puerto, peers)
 	
-	// Cargar ofertas persistidas
 	if err := dbNode.cargarOfertas(); err != nil {
 		log.Printf("[%s] Error cargando ofertas: %v", nodoID, err)
 	}
 	
-	// Conectar a peers (con retry)
 	go func() {
-		time.Sleep(3 * time.Second) // Esperar que otros nodos inicien
+		time.Sleep(3 * time.Second)
 		dbNode.conectarAPeers()
 		
-		// Sincronizar periódicamente
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 		
@@ -336,15 +320,9 @@ func main() {
 		}
 	}()
 	
-	// Simular fallo si es DB2 (después de 20 segundos, por 15 segundos)
-	if nodoID == "DB2" {
-		go func() {
-			time.Sleep(20 * time.Second)
-			dbNode.simularFallo(15 * time.Second)
-		}()
-	}
+	// ← BD1 NO SIMULA FALLO (comentado o eliminado)
+	// NO incluir el bloque de simulación de fallo
 	
-	// Iniciar servidor gRPC
 	lis, err := net.Listen("tcp", puerto)
 	if err != nil {
 		log.Fatalf("[%s] Error escuchando: %v", nodoID, err)

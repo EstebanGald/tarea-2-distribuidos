@@ -3,107 +3,238 @@ package main
 import (
 	"context"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"os"
 	"strconv"
+	"strings" 
 	"time"
 
-	pb "parisio_bd3/proto"
+	pb "Parisio_BD3/proto"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
-	address_broker = "localhost:50051"
+	address_broker = "broker:50051"
 )
 
-func main() {
+var validCategorias = map[string]bool{
+	"Electrónica":        true,
+	"Moda":               true,
+	"Hogar":              true,
+	"Deportes":           true,
+	"Belleza":            true,
+	"Infantil":           true,
+	"Computación":        true,
+	"Electrodomésticos":  true,
+	"Herramientas":       true,
+	"Juguetes":           true,
+	"Automotriz":         true,
+	"Mascotas":           true,
+}
 
-	//random seed
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	//Conectar al servidor gRPC
-	conn, err := grpc.Dial(address_broker, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Error al conectar al servidor: %v", err)
+type Productor struct {
+	nombre    string
+	catalogo  string
+	client    pb.OfertasClient
+	rand      *rand.Rand
+}
+
+func NewProductor(nombre, catalogo string) *Productor {
+	return &Productor{
+		nombre:   nombre,
+		catalogo: catalogo,
+		rand:     rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
-	defer conn.Close()
+}
 
-	client := pb.NewOfertasClient(conn)
-
-	ctx := context.Background()
-
-	// 2. Open the CSV file
-	file, err := os.Open("parisio_catalogo.csv")
+func (p *Productor) conectarBroker() error {
+	conn, err := grpc.Dial(address_broker, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Error al abrir CSV: %v", err)
+		return err
+	}
+	
+	p.client = pb.NewOfertasClient(conn)
+	log.Printf("[%s] ✅ Conectado al broker", p.nombre)
+	return nil
+}
+
+func (p *Productor) generarUUID() string {
+	// Generar UUID simple: timestamp + random
+	return fmt.Sprintf("%s-%d-%d", p.nombre, time.Now().UnixNano(), p.rand.Intn(999999))
+}
+
+func (p *Productor) validarYEnviarOferta(record []string) error {
+	// record: [producto_id, tienda, categoria, producto, precio_base, stock]
+	
+	// Validar categoría
+	categoria := record[2]
+	if !validCategorias[categoria] {
+		log.Printf("[%s] ⚠️  Categoría '%s' no válida, saltando", p.nombre, categoria)
+		return fmt.Errorf("categoría no válida")
+	}
+	
+	// Parsear precio y stock
+	originalPrecioBase, err := strconv.Atoi(record[4])
+	if err != nil {
+		log.Printf("[%s] ⚠️  No se pudo transformar precio_base '%s', saltando", p.nombre, record[4])
+		return err
+	}
+	
+	stock, err := strconv.Atoi(record[5])
+	if err != nil {
+		log.Printf("[%s] ⚠️  No se pudo transformar stock '%s', saltando", p.nombre, record[5])
+		return err
+	}
+	
+	// Validar stock > 0
+	if stock <= 0 {
+		log.Printf("[%s] ⚠️  Stock = 0 para producto %s, saltando", p.nombre, record[0])
+		return fmt.Errorf("stock inválido")
+	}
+	
+	// Aplicar descuento aleatorio entre 10% y 50%
+	discountPercent := 0.10 + p.rand.Float64()*0.40
+	originalPrecioFloat := float64(originalPrecioBase)
+	discountedPrecioFloat := originalPrecioFloat * (1.0 - discountPercent)
+	finalPrecio := int32(discountedPrecioFloat)
+	
+	// Fecha actual
+	currentTime := time.Now()
+	formattedDate := currentTime.Format("2006-01-02")
+	
+	// Generar oferta_id único
+	ofertaID := p.generarUUID()
+	
+	// Crear y enviar oferta
+	oferta := &pb.OfertaRequest{
+		OfertaId:        ofertaID,
+		ProductoId:      record[0],
+		Tienda:          record[1],
+		Categoria:       categoria,
+		Producto:        record[3],
+		PrecioDescuento: finalPrecio,
+		Stock:           int32(stock),
+		Fecha:           formattedDate,
+		ClienteId:       p.nombre,
+		Timestamp:       time.Now().Unix(),
+	}
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	
+	resp, err := p.client.EnviarOferta(ctx, oferta)
+	if err != nil {
+		log.Printf("[%s] ❌ Error enviando oferta %s: %v", p.nombre, record[0], err)
+		return err
+	}
+	
+	if resp.GetExito() {
+		log.Printf("[%s] ✅ Oferta %s enviada: %s - $%d (desc: %.0f%%)", 
+			p.nombre, record[0], record[3], finalPrecio, discountPercent*100)
+	} else {
+		log.Printf("[%s] ⚠️  Oferta %s rechazada: %s", p.nombre, record[0], resp.GetMensaje())
+	}
+	
+	return nil
+}
+
+func (p *Productor) procesarCatalogo() error {
+	file, err := os.Open(p.catalogo)
+	if err != nil {
+		return err
 	}
 	defer file.Close()
-
-	// 3. Create a new CSV reader
+	
 	reader := csv.NewReader(file)
-	// Skip the header row
+	
+	// Saltar header
 	if _, err := reader.Read(); err != nil {
-		log.Fatalf("Error leyendo header CSV: %v", err)
+		return err
 	}
-
-	// 4. Loop through each record in the CSV
+	
+	ofertasEnviadas := 0
+	ofertasExitosas := 0
+	ofertasRechazadas := 0
+	
 	for {
 		record, err := reader.Read()
-		// Stop at the end of the file
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Error leyendo oferta de CSV: %v", err)
-		}
-
-		//convertir precio y stock a int32
-		originalPrecioBase, err := strconv.Atoi(record[4])
-		if err != nil {
-			log.Printf("Warning: no se pudo transformar precio_base '%s'. Saltando fila.", record[4])
+			log.Printf("[%s] Error leyendo línea del CSV: %v", p.nombre, err)
 			continue
 		}
-
-		stock, err := strconv.Atoi(record[5])
-		if err != nil {
-			log.Printf("Warning: no se pudo transformar stock '%s'. Saltando fila.", record[5])
-			continue
+		
+		ofertasEnviadas++
+		
+		// Validar y enviar
+		if err := p.validarYEnviarOferta(record); err != nil {
+			ofertasRechazadas++
+		} else {
+			ofertasExitosas++
 		}
-
-		//Aplicar descuento aleatorio entre 10% y 50%
-		discountPercent := 0.10 + r.Float64()*0.40
-		originalPrecioFloat := float64(originalPrecioBase)
-		discountedPrecioFloat := originalPrecioFloat * (1.0 - discountPercent)
-		finalPrecio := int32(discountedPrecioFloat)
-
-		//Get Fecha Actual
-		currentTime := time.Now()
-		formattedDate := currentTime.Format("2006-01-02")
-
-		resp, err := client.Ofertas(ctx, &pb.OfertasRequest{
-			ProductoId:      record[0],
-			Tienda:          record[1],
-			Categoria:       record[2],
-			Producto:        record[3],
-			PrecioDescuento: int32(finalPrecio),
-			Stock:           int32(stock),
-			Fecha:           formattedDate,
-			ClienteId:       "Parisio", // Identificador del cliente
-		})
-
-		if err != nil {
-			log.Printf("Error enviando operacion para ProductoId %s: %v", record[0], err)
-			continue // Continuar a la siguiente fila incluso si hay un error
-		}
-
-		log.Printf("Respuesta de %s: %s", record[0], resp.GetBrokerMessage())
-
-		// Esperar un tiempo aleatorio entre 500ms y 2000ms antes de enviar la siguiente oferta
-		sleepDuration := time.Duration(500+r.Intn(1500)) * time.Millisecond
+		
+		// Esperar tiempo aleatorio entre 500ms y 2000ms
+		sleepDuration := time.Duration(500+p.rand.Intn(1500)) * time.Millisecond
 		time.Sleep(sleepDuration)
 	}
+	
+	log.Printf("[%s] 📊 RESUMEN:", p.nombre)
+	log.Printf("  - Total intentadas: %d", ofertasEnviadas)
+	log.Printf("  - Exitosas: %d", ofertasExitosas)
+	log.Printf("  - Rechazadas: %d", ofertasRechazadas)
+	
+	return nil
+}
 
-	log.Println("Se han enviado todas las ofertas del CSV.")
+func main() {
+	// Leer configuración desde variables de entorno
+	nombre := os.Getenv("PRODUCTOR_NOMBRE")
+	if nombre == "" {
+		if len(os.Args) > 1 {
+			nombre = os.Args[1]
+		} else {
+			nombre = "Riploy" // Default
+		}
+	}
+	
+	catalogo := os.Getenv("CATALOGO")
+	if catalogo == "" {
+		catalogo = fmt.Sprintf("%s_catalogo.csv", strings.ToLower(nombre))
+	}
+	
+	log.Printf("[PRODUCTOR] Iniciando %s", nombre)
+	log.Printf("[PRODUCTOR] Catálogo: %s", catalogo)
+	
+	productor := NewProductor(nombre, catalogo)
+	
+	// Conectar al broker con reintentos
+	for intentos := 0; intentos < 10; intentos++ {
+		err := productor.conectarBroker()
+		if err == nil {
+			break
+		}
+		log.Printf("[%s] Error conectando (intento %d/10): %v", nombre, intentos+1, err)
+		time.Sleep(3 * time.Second)
+	}
+	
+	if productor.client == nil {
+		log.Fatalf("[%s] No se pudo conectar al broker después de 10 intentos", nombre)
+	}
+	
+	// Esperar un poco antes de empezar a enviar
+	time.Sleep(5 * time.Second)
+	
+	// Procesar catálogo y enviar ofertas
+	if err := productor.procesarCatalogo(); err != nil {
+		log.Fatalf("[%s] Error procesando catálogo: %v", nombre, err)
+	}
+	
+	log.Printf("[%s] ✅ Todas las ofertas del catálogo han sido procesadas", nombre)
 }

@@ -148,7 +148,9 @@ extraer-resultados:
 	done
 	@echo "✅ Resultados extraídos a ./resultados/"
 
+
 # Monitoreo en tiempo real
+# Prueba v3
 monitor:
 	@echo "📡 Monitoreo en tiempo real (Ctrl+C para salir)"
 	watch -n 2 'docker-compose ps && echo "\n=== Logs recientes ===" && docker-compose logs --tail=5'

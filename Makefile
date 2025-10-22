@@ -92,7 +92,7 @@ proto:
 	cd Consumidores && protoc --go_out=. --go-grpc_out=. proto/ofertas.proto
 	@echo "✅ Protocol Buffers recompilados"
 
-# Docker por VM (MODIFICADO para usar docker run y variables de IP)
+# Docker por VM (CORREGIDO para usar nombres de imagen de docker-compose)
 
 # --- VM1: Riploy / BD1 / Consumidor E2 ---
 docker-VM1:
@@ -105,7 +105,7 @@ docker-VM1:
 	  -e PUERTO=:50052 \
 	  -e PEERS="$(VM2_IP):50053,$(VM3_IP):50054" \
 	  --network=host \
-	  cyberday-db1
+	  tarea-2-distribuidos_db1 # <-- Nombre de imagen CORREGIDO
 	@echo " -> DB1 iniciado."
 	# Iniciar Riploy
 	@docker run -d --rm --name cyberday_riploy \
@@ -114,7 +114,7 @@ docker-VM1:
 	  -e CATALOGO=riploy_catalogo.csv \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  cyberday-riploy
+	  tarea-2-distribuidos_riploy # <-- Nombre de imagen CORREGIDO
 	@echo " -> Riploy iniciado."
 	# Iniciar Consumidor E2
 	@docker run -d --rm --name cyberday_consumidor_e2 \
@@ -124,7 +124,7 @@ docker-VM1:
 	  -e CONSUMIDOR_ID=C-E2 \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  cyberday-consumidor
+	  tarea-2-distribuidos_consumidor_e2 # <-- Nombre de imagen CORREGIDO (ajustar si tienes nombres específicos por consumidor en docker-compose.yml)
 	@echo " -> Consumidor E2 iniciado."
 	@echo "✅ Servicios VM1 listos."
 
@@ -139,7 +139,7 @@ docker-VM2:
 	  -e PUERTO=:50053 \
 	  -e PEERS="$(VM1_IP):50052,$(VM3_IP):50054" \
 	  --network=host \
-	  cyberday-db2
+	  tarea-2-distribuidos_db2 # <-- Nombre de imagen CORREGIDO
 	@echo " -> DB2 iniciado."
 	# Iniciar Falabellox
 	@docker run -d --rm --name cyberday_falabellox \
@@ -148,7 +148,7 @@ docker-VM2:
 	  -e CATALOGO=falabellox_catalogo.csv \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  cyberday-falabellox
+	  tarea-2-distribuidos_falabellox # <-- Nombre de imagen CORREGIDO
 	@echo " -> Falabellox iniciado."
 	# Iniciar Consumidor E3
 	@docker run -d --rm --name cyberday_consumidor_e3 \
@@ -158,7 +158,7 @@ docker-VM2:
 	  -e CONSUMIDOR_ID=C-E3 \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  cyberday-consumidor
+	  tarea-2-distribuidos_consumidor_e3 # <-- Nombre de imagen CORREGIDO (ajustar)
 	@echo " -> Consumidor E3 iniciado."
 	@echo "✅ Servicios VM2 listos."
 
@@ -173,7 +173,7 @@ docker-VM3:
 	  -e PUERTO=:50054 \
 	  -e PEERS="$(VM1_IP):50052,$(VM2_IP):50053" \
 	  --network=host \
-	  cyberday-db3
+	  tarea-2-distribuidos_db3 # <-- Nombre de imagen CORREGIDO
 	@echo " -> DB3 iniciado."
 	# Iniciar Parisio
 	@docker run -d --rm --name cyberday_parisio \
@@ -182,7 +182,7 @@ docker-VM3:
 	  -e CATALOGO=parisio_catalogo.csv \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  cyberday-parisio
+	  tarea-2-distribuidos_parisio # <-- Nombre de imagen CORREGIDO
 	@echo " -> Parisio iniciado."
 	@echo "✅ Servicios VM3 listos."
 
@@ -196,7 +196,7 @@ docker-VM4:
 	  -e DB2_ADDR="$(VM2_IP):50053" \
 	  -e DB3_ADDR="$(VM3_IP):50054" \
 	  --network=host \
-	  cyberday-broker
+	  tarea-2-distribuidos_broker # <-- Nombre de imagen CORREGIDO
 	@echo " -> Broker iniciado."
 	# Iniciar Consumidor E1
 	@docker run -d --rm --name cyberday_consumidor_e1 \
@@ -206,7 +206,7 @@ docker-VM4:
 	  -e CONSUMIDOR_ID=C-E1 \
 	  -e BROKER_ADDR="127.0.0.1:50051" \
 	  --network=host \
-	  cyberday-consumidor
+	  tarea-2-distribuidos_consumidor_e1 # <-- Nombre de imagen CORREGIDO (ajustar)
 	@echo " -> Consumidor E1 iniciado."
 	@echo "✅ Servicios VM4 listos."
 

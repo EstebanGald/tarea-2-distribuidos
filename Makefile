@@ -124,7 +124,7 @@ docker-VM1:
 	  -e CONSUMIDOR_ID=C-E2 \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  tarea-2-distribuidos_consumidor_e2 # <-- Nombre de imagen CORREGIDO (ajustar si tienes nombres específicos por consumidor en docker-compose.yml)
+	  tarea-2-distribuidos_consumidor_c2_2 # <-- Use the specific tag
 	@echo " -> Consumidor E2 iniciado."
 	@echo "✅ Servicios VM1 listos."
 
@@ -158,7 +158,7 @@ docker-VM2:
 	  -e CONSUMIDOR_ID=C-E3 \
 	  -e BROKER_ADDR="$(VM4_IP):50051" \
 	  --network=host \
-	  tarea-2-distribuidos_consumidor_e3 # <-- Nombre de imagen CORREGIDO (ajustar)
+	  tarea-2-distribuidos_consumidor_c3_3 # <-- Use the specific tag
 	@echo " -> Consumidor E3 iniciado."
 	@echo "✅ Servicios VM2 listos."
 
@@ -206,7 +206,7 @@ docker-VM4:
 	  -e CONSUMIDOR_ID=C-E1 \
 	  -e BROKER_ADDR="127.0.0.1:50051" \
 	  --network=host \
-	  tarea-2-distribuidos_consumidor_e1 # <-- Nombre de imagen CORREGIDO (ajustar)
+	  tarea-2-distribuidos_consumidor_c1_1 # <-- Use the specific tag
 	@echo " -> Consumidor E1 iniciado."
 	@echo "✅ Servicios VM4 listos."
 

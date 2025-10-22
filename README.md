@@ -131,27 +131,6 @@ make logs-prod
 make logs-cons
 ```
 
-### Extraer Resultados
-
-```bash
-# Extraer reporte y archivos CSV
-make extraer-resultados
-
-# Los archivos se guardarán en ./resultados/
-# - Reporte.txt: Resumen completo de la ejecución
-# - C-E1.csv, C-E2.csv, ...: Ofertas recibidas por cada consumidor
-```
-
-### Ver Reporte
-
-```bash
-# Ver reporte directamente
-make reporte
-
-# O manualmente:
-docker exec cyberday_broker cat /root/Reporte.txt
-```
-
 ##  Estructura del Proyecto
 
 ```
@@ -193,207 +172,23 @@ docker exec cyberday_broker cat /root/Reporte.txt
 └── README.md
 ```
 
-## Configuración
+### Instrucciones para correr el programa
 
-### Archivo consumidores.csv
+    En las máquinas virtuales, entrar a carpeta de tarea "tarea-2-distribuidos"
+    Luego dependiendo de la máquina virtual, correr 'sudo make docker-VMn' n siendo el número de la VM
 
-Formato: `id_consumidor,categoria,tienda,precio_max`
-
-```csv
-C-E1,Electrónica,null,null
-C-E2,Electrónica,Falabellox,null
-C-E3,Electrónica,Riploy;Falabellox,null
-C-E4,Electrónica,Parisio,100000
-C-H3,Hogar;Electrónica;Deportes,null,300000
-C-H4,null,null,null
-```
-
-**Reglas:**
-- `null` = cualquier valor
-- `;` = separador para múltiples valores
-- Categorías y tiendas soportan múltiples valores
-- `precio_max = 0` o `null` = sin límite
-
-### Categorías Válidas
-
-- Electrónica
-- Moda
-- Hogar
-- Deportes
-- Belleza
-- Infantil
-- Computación
-- Electrodomésticos
-- Herramientas
-- Juguetes
-- Automotriz
-- Mascotas
-
-## Simulación de Fallos
-
-El sistema simula fallos automáticamente:
-
-- **DB2**: Falla temporalmente a los 20 segundos por 15 segundos
-- **Consumidor C-E3**: Se desconecta a los 30 segundos por 20 segundos
-- **Consumidor C-H2**: Se desconecta a los 40 segundos por 15 segundos
-
-### Comportamiento Esperado
-
-1. **Durante fallo de DB2**:
-   - Sistema continúa operando con DB1 y DB3
-   - W=2 se cumple con los nodos activos
-   - Ofertas se almacenan correctamente
-
-2. **Recuperación de DB2**:
-   - DB2 solicita sincronización de peers
-   - Recibe ofertas perdidas durante el fallo
-   - Se reintegra al sistema
-
-3. **Durante desconexión de consumidor**:
-   - Broker marca consumidor como inactivo
-   - No se envían ofertas durante desconexión
-
-4. **Recuperación de consumidor**:
-   - Consumidor solicita histórico al broker
-   - Broker consulta R=2 nodos DB
-   - Consumidor recibe ofertas perdidas
-
-## Parámetros de Consistencia
-
-### N=3, W=2, R=2 (Modelo DynamoDB)
-
-- **N=3**: Replicación en 3 nodos
-- **W=2**: Escritura exitosa con 2 confirmaciones
-- **R=2**: Lectura válida con 2 respuestas coincidentes
-
-**Garantías:**
-- Alta disponibilidad ante fallo de 1 nodo
-- Consistencia eventual
-- Durabilidad de datos
-
-## Reporte Final
-
-El broker genera `Reporte.txt` con:
-
-### 1. Resumen de Productores
-- Ofertas enviadas por productor
-- Ofertas aceptadas
-- Ofertas rechazadas
-
-### 2. Estado de Nodos DB
-- Estado final (activo/caído)
-- Escrituras exitosas
-- Escrituras fallidas
-
-### 3. Notificaciones a Consumidores
-- Ofertas recibidas por consumidor
-- Estado final (activo/desconectado)
-- Confirmación de archivos CSV
-
-### 4. Fallos y Recuperaciones
-- Listado de fallos simulados
-- Resultados de resincronización
-
-### 5. Conclusión
-- Disponibilidad del sistema
-- Cumplimiento de N=3, W=2, R=2
-
-## Desarrollo
-
-### Recompilar Protocol Buffers
-
-```bash
-make proto
-```
-
-O manualmente en cada módulo:
-
-```bash
-protoc --go_out=. --go-grpc_out=. proto/ofertas.proto
-```
-
-### Ejecutar Tests
-
-```bash
-make test
-```
-
-### Limpiar Sistema
-
-```bash
-# Detener y eliminar contenedores y volúmenes
-make clean
-```
-
-## Troubleshooting
-
-### Problema: Contenedores no se comunican
-
-**Solución**: Verificar que todos los contenedores estén en la misma red
-
-```bash
-docker network inspect cyberday-distribuido_cyberday_network
-```
-
-### Problema: Broker no se conecta a nodos DB
-
-**Solución**: Verificar que los nodos DB iniciaron primero
-
-```bash
-docker-compose logs db1 db2 db3
-```
-
-Reiniciar si es necesario:
-
-```bash
-make restart-db
-make restart-broker
-```
-
-### Problema: Consumidores no reciben ofertas
-
-**Solución**: Verificar registro en broker
-
-```bash
-docker-compose logs broker | grep "Registrando consumidor"
-```
-
-### Problema: Reporte no se genera
-
-**Solución**: Esperar a que los productores terminen
-
-```bash
-docker-compose logs riploy falabellox parisio | grep "procesadas"
-```
-
-## Documentación Adicional
-
-### Protocol Buffers
-
-Ver `proto/ofertas.proto` para la definición completa de mensajes y servicios gRPC.
-
-### Variables de Entorno
-
-Cada componente acepta variables de entorno para configuración:
-
-**Broker:**
-- `TZ`: Zona horaria (default: America/Santiago)
-
-**Nodos DB:**
-- `NODO_ID`: Identificador del nodo (DB1, DB2, DB3)
-- `PUERTO`: Puerto de escucha
-- `TZ`: Zona horaria
-
-**Productores:**
-- `PRODUCTOR_NOMBRE`: Nombre del productor
-- `CATALOGO`: Archivo CSV del catálogo
-- `TZ`: Zona horaria
-
-**Consumidores:**
-- `CONSUMIDOR_ID`: ID del consumidor (C-E1, C-M2, etc.)
-- `BROKER_ADDR`: Dirección del broker
-- `ARCHIVO_CONFIG`: Ruta al consumidores.csv
-- `TZ`: Zona horaria
+Para cada maquina virtual ejecutar:
 
 
----
+make build
+make docker-VM1 //en caso de ser la vm 1
+make logs //para ver los logs de cada vm
+
+
+VM1 (dist078) Ejecuta los contenedores de Riploy/BD1/Consumidor2
+
+VM2 (dist079) Ejecuta los contenedores de Falabellox/BD2/Consumidor3
+
+VM3 (dist080) Ejecuta los contenedores de Parisio/BD3
+
+VM4 (dist102) Ejecuta los contenedores de Broker/Consumidor1

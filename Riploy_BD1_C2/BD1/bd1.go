@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -293,14 +294,25 @@ func main() {
 		puerto = ":50052"  // ← PUERTO DEFAULT PARA BD1
 	}
 	
+	//Leer peers desde una variable de entorno
+    // --- CORRECTED SECTION ---
+	peersStr := os.Getenv("PEERS") // Ej: "10.0.0.2:50053,10.0.0.3:50054"
 	peers := []string{}
-	if nodoID == "DB1" {
-		peers = []string{"db2:50053", "db3:50054"}
-	} else if nodoID == "DB2" {
-		peers = []string{"db1:50052", "db3:50054"}
-	} else if nodoID == "DB3" {
-		peers = []string{"db1:50052", "db2:50053"}
+	if peersStr != "" {
+		peers = strings.Split(peersStr, ",") // Use peersStr here
+		log.Printf("[%s] Peers configurados desde ENV: %v", nodoID, peers)
+	} else {
+        // Fallback to default logic if PEERS env var is not set
+        log.Printf("[%s] Variable PEERS no encontrada, usando defaults...", nodoID)
+		if nodoID == "DB1" {
+			peers = []string{"db2:50053", "db3:50054"}
+		} else if nodoID == "DB2" {
+			peers = []string{"db1:50052", "db3:50054"}
+		} else if nodoID == "DB3" {
+			peers = []string{"db1:50052", "db2:50053"}
+		}
 	}
+    // --- END CORRECTED SECTION ---
 	
 	dbNode := NewDBNode(nodoID, puerto, peers)
 	

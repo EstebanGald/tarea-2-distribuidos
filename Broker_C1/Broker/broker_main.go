@@ -20,9 +20,6 @@ import (
 
 const (
 	address_broker = ":50051"
-	address_db1    = "db1:50052"
-	address_db2    = "db2:50053"
-	address_db3    = "db3:50054"
 )
 
 var validCategorias = map[string]bool{
@@ -604,7 +601,15 @@ func main() {
 	log.Println("[BROKER] Iniciando...")
 	
 	// Conectar a nodos DB
-	dbAddresses := []string{address_db1, address_db2, address_db3}
+	db1Addr := os.Getenv("DB1_ADDR")
+    if db1Addr == "" { db1Addr = "db1:50052" } // Default
+
+    db2Addr := os.Getenv("DB2_ADDR")
+    if db2Addr == "" { db2Addr = "db2:50053" } // Default
+
+    db3Addr := os.Getenv("DB3_ADDR")
+    if db3Addr == "" { db3Addr = "db3:50054" } // Default
+	dbAddresses := []string{db1Addr, db2Addr, db3Addr} // <-- Use the variables read from env
 	var dbClients []pb.DynamoDBClient
 	var connections []*grpc.ClientConn
 	dbActivos := []bool{true, true, true}

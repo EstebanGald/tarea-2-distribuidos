@@ -1,5 +1,15 @@
 .PHONY: help build up down logs clean proto test
 
+# ==========================================================
+#         CONFIGURACIÓN DE IPs PARA MÚLTIPLES VMs
+# ==========================================================
+# Edita estas IPs con las direcciones reales de tus VMs
+VM1_IP ?= 10.35.168.112 #dist102 <- CAMBIAR IP VM1 (Ej: Riploy, DB1, Consumidor E2)
+VM2_IP ?= 10.35.168.88 #dist078 <- CAMBIAR IP VM2 (Ej: Falabellox, DB2, Consumidor E3)
+VM3_IP ?= 10.35.168.89 #dist079 <- CAMBIAR IP VM3 (Ej: Parisio, DB3)
+VM4_IP ?= 10.35.168.90 #dist080 <- CAMBIAR IP VM4 dist080(Ej: Broker, Consumidor E1)
+# ==========================================================
+
 # Variables
 # Detectar si usar docker-compose o docker compose
 DOCKER_COMPOSE := $(shell if command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; else echo "docker compose"; fi)
@@ -82,22 +92,130 @@ proto:
 	cd Consumidores && protoc --go_out=. --go-grpc_out=. proto/ofertas.proto
 	@echo "✅ Protocol Buffers recompilados"
 
-# Docker por VM (según especificación del laboratorio)
+# Docker por VM (MODIFICADO para usar docker run y variables de IP)
+
+# --- VM1: Riploy / BD1 / Consumidor E2 ---
 docker-VM1:
-	@echo "🖥️  VM1: Riploy / BD1 / Consumidor2"
-	$(DOCKER_COMPOSE) up -d riploy db1 consumidor_e2
+	@echo "🖥️  Iniciando servicios para VM1 (IP: $(VM1_IP))..."
+	# Iniciar DB1
+	@docker run -d --rm --name cyberday_db1 \
+	  -v db1_data:/data \
+	  -e TZ=America/Santiago \
+	  -e NODO_ID=DB1 \
+	  -e PUERTO=:50052 \
+	  -e PEERS="$(VM2_IP):50053,$(VM3_IP):50054" \
+	  --network=host \
+	  cyberday-db1
+	@echo " -> DB1 iniciado."
+	# Iniciar Riploy
+	@docker run -d --rm --name cyberday_riploy \
+	  -e TZ=America/Santiago \
+	  -e PRODUCTOR_NOMBRE=Riploy \
+	  -e CATALOGO=riploy_catalogo.csv \
+	  -e BROKER_ADDR="$(VM4_IP):50051" \
+	  --network=host \
+	  cyberday-riploy
+	@echo " -> Riploy iniciado."
+	# Iniciar Consumidor E2
+	@docker run -d --rm --name cyberday_consumidor_e2 \
+	  -v /home/user/consumidores.csv:/app/consumidores.csv:ro \
+	  -v consumidor_e2_data:/data \
+	  -e TZ=America/Santiago \
+	  -e CONSUMIDOR_ID=C-E2 \
+	  -e BROKER_ADDR="$(VM4_IP):50051" \
+	  --network=host \
+	  cyberday-consumidor
+	@echo " -> Consumidor E2 iniciado."
+	@echo "✅ Servicios VM1 listos."
 
+# --- VM2: Falabellox / BD2 / Consumidor E3 ---
 docker-VM2:
-	@echo "🖥️  VM2: Falabellox / BD2 / Consumidor3"
-	$(DOCKER_COMPOSE) up -d falabellox db2 consumidor_e3
+	@echo "🖥️  Iniciando servicios para VM2 (IP: $(VM2_IP))..."
+	# Iniciar DB2
+	@docker run -d --rm --name cyberday_db2 \
+	  -v db2_data:/data \
+	  -e TZ=America/Santiago \
+	  -e NODO_ID=DB2 \
+	  -e PUERTO=:50053 \
+	  -e PEERS="$(VM1_IP):50052,$(VM3_IP):50054" \
+	  --network=host \
+	  cyberday-db2
+	@echo " -> DB2 iniciado."
+	# Iniciar Falabellox
+	@docker run -d --rm --name cyberday_falabellox \
+	  -e TZ=America/Santiago \
+	  -e PRODUCTOR_NOMBRE=Falabellox \
+	  -e CATALOGO=falabellox_catalogo.csv \
+	  -e BROKER_ADDR="$(VM4_IP):50051" \
+	  --network=host \
+	  cyberday-falabellox
+	@echo " -> Falabellox iniciado."
+	# Iniciar Consumidor E3
+	@docker run -d --rm --name cyberday_consumidor_e3 \
+	  -v /home/user/consumidores.csv:/app/consumidores.csv:ro \
+	  -v consumidor_e3_data:/data \
+	  -e TZ=America/Santiago \
+	  -e CONSUMIDOR_ID=C-E3 \
+	  -e BROKER_ADDR="$(VM4_IP):50051" \
+	  --network=host \
+	  cyberday-consumidor
+	@echo " -> Consumidor E3 iniciado."
+	@echo "✅ Servicios VM2 listos."
 
+# --- VM3: Parisio / BD3 ---
 docker-VM3:
-	@echo "🖥️  VM3: Parisio / BD3"
-	$(DOCKER_COMPOSE) up -d parisio db3
+	@echo "🖥️  Iniciando servicios para VM3 (IP: $(VM3_IP))..."
+	# Iniciar DB3
+	@docker run -d --rm --name cyberday_db3 \
+	  -v db3_data:/data \
+	  -e TZ=America/Santiago \
+	  -e NODO_ID=DB3 \
+	  -e PUERTO=:50054 \
+	  -e PEERS="$(VM1_IP):50052,$(VM2_IP):50053" \
+	  --network=host \
+	  cyberday-db3
+	@echo " -> DB3 iniciado."
+	# Iniciar Parisio
+	@docker run -d --rm --name cyberday_parisio \
+	  -e TZ=America/Santiago \
+	  -e PRODUCTOR_NOMBRE=Parisio \
+	  -e CATALOGO=parisio_catalogo.csv \
+	  -e BROKER_ADDR="$(VM4_IP):50051" \
+	  --network=host \
+	  cyberday-parisio
+	@echo " -> Parisio iniciado."
+	@echo "✅ Servicios VM3 listos."
 
+# --- VM4: Broker / Consumidor E1 ---
 docker-VM4:
-	@echo "🖥️  VM4: Broker / Consumidor1"
-	$(DOCKER_COMPOSE) up -d broker consumidor_e1
+	@echo "🖥️  Iniciando servicios para VM4 (IP: $(VM4_IP))..."
+	# Iniciar Broker
+	@docker run -d --rm --name cyberday_broker \
+	  -e TZ=America/Santiago \
+	  -e DB1_ADDR="$(VM1_IP):50052" \
+	  -e DB2_ADDR="$(VM2_IP):50053" \
+	  -e DB3_ADDR="$(VM3_IP):50054" \
+	  --network=host \
+	  cyberday-broker
+	@echo " -> Broker iniciado."
+	# Iniciar Consumidor E1
+	@docker run -d --rm --name cyberday_consumidor_e1 \
+	  -v /home/user/consumidores.csv:/app/consumidores.csv:ro \
+	  -v consumidor_e1_data:/data \
+	  -e TZ=America/Santiago \
+	  -e CONSUMIDOR_ID=C-E1 \
+	  -e BROKER_ADDR="127.0.0.1:50051" \
+	  --network=host \
+	  cyberday-consumidor
+	@echo " -> Consumidor E1 iniciado."
+	@echo "✅ Servicios VM4 listos."
+
+# Comando para detener los contenedores en la VM actual
+stop-vm-containers:
+	@echo "🛑 Deteniendo contenedores Docker de CyberDay en esta VM..."
+	@docker ps -q --filter "name=cyberday_" | xargs -r docker stop | xargs -r echo "Contenedores detenidos:"
+
+# ... (resto del Makefile como logs, clean, proto, reporte, status, etc.)
 
 # Ver reporte generado
 reporte:

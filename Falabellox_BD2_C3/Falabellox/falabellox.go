@@ -18,9 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	address_broker = "broker:50051"
-)
+
 
 var validCategorias = map[string]bool{
 	"Electrónica":        true,
@@ -52,8 +50,8 @@ func NewProductor(nombre, catalogo string) *Productor {
 	}
 }
 
-func (p *Productor) conectarBroker() error {
-	conn, err := grpc.Dial(address_broker, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (p *Productor) conectarBroker(brokerAddr string) error {
+	conn, err := grpc.Dial(brokerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
@@ -209,19 +207,28 @@ func main() {
 		catalogo = fmt.Sprintf("%s_catalogo.csv", strings.ToLower(nombre))
 	}
 	
+	brokerAddr := os.Getenv("BROKER_ADDR")
+    if brokerAddr == "" {
+        brokerAddr = "broker:50051" // Mantenemos un default
+    }
+
 	log.Printf("[PRODUCTOR] Iniciando %s", nombre)
 	log.Printf("[PRODUCTOR] Catálogo: %s", catalogo)
 	
 	productor := NewProductor(nombre, catalogo)
 	
 	// Conectar al broker con reintentos
+	var err error // <-- Declare err *before* the loop
 	for intentos := 0; intentos < 10; intentos++ {
-		err := productor.conectarBroker()
+		err := productor.conectarBroker(brokerAddr)
 		if err == nil {
 			break
 		}
 		log.Printf("[%s] Error conectando (intento %d/10): %v", nombre, intentos+1, err)
 		time.Sleep(3 * time.Second)
+	}
+	if err != nil { // Check the error from the loop
+		log.Fatalf("[%s] No se pudo conectar al broker después de 10 intentos: %v", nombre, err)
 	}
 	
 	if productor.client == nil {
